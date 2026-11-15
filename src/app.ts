@@ -1,6 +1,6 @@
-import express from 'express';
-
-const app = express();
+import express,{Express} from 'express';
+import { userRouter } from './routers/user.router.js';
+const app : Express= express();
 app.get("/health",(_req,res) => {
     console.log("Exceuted health route");
     res.json({
@@ -8,4 +8,5 @@ app.get("/health",(_req,res) => {
         timestamp : new Date().toISOString()
     })
 })
+app.use("/api/users",userRouter);
 export {app};
