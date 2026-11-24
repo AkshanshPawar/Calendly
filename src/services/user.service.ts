@@ -1,5 +1,5 @@
 import slug from "slug";
-import { createUserDto, createUserSchema, updateUserDto, updateUserSchema } from "../dtos/user.dto.js";
+import { createUserDto, updateUserDto } from "../dtos/user.dto.js";
 import {
   create,
   findByEmail,
