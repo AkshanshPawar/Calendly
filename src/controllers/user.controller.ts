@@ -10,7 +10,7 @@ import { sendSuccess } from "../utils/api-response.js";
 
 export async function findAllUsers(_req: Request, res: Response) {
   const response = await findAllUsersService();
-  res.json(response);
+  // res.json(response);
   sendSuccess(res, response);
 }
 

@@ -6,7 +6,11 @@ import {
   findExceptionsByUserInRange,
 } from "../repositories/availability.repository.js";
 import { findActiveEventTypesByHost } from "../repositories/event-type.repository.js";
-import { findBookedSlotsByHostInRange } from "../repositories/slot.repository.js";
+import {
+  blockSlot,
+  findBookedSlotsByHostInRange,
+  upsertAvailableSlot,
+} from "../repositories/slot.repository.js";
 import {
   applyExceptionsForDate,
   overlapsBooked,
@@ -26,11 +30,11 @@ export async function regenerateHostSlots(input: RegenerateHostSlotsInput) {
   if (!host) return;
   const from = input.from
     ? DateTime.fromISO(input.from, { zone: "utc" }).startOf("day")
-    : DateTime.now().startOf("day");
+    : DateTime.now().startOf("day").toUTC();
 
   const to = input.to
     ? DateTime.fromISO(input.to, { zone: "utc" }).endOf("day")
-    : from.plus({ days: SLOT_GENERATION_DAYS }).endOf("day");
+    : from.plus({ days: SLOT_GENERATION_DAYS }).endOf("day").toUTC();
 
   const [rules, exceptions, eventTypes, bookedSlots] = await Promise.all([
     findActiveRulesByUser(input.hostId),
@@ -101,26 +105,9 @@ export async function regenerateHostSlots(input: RegenerateHostSlotsInput) {
         const endAt = slot.end.toUTC().toJSDate();
 
         const key = `${eventType.id}|${startAt.toISOString()}|${endAt.toISOString()}`;
+        generatedValidSlotKeys.add(key);
 
-        await prisma.slot.upsert({
-          where: {
-            eventTypeId_startAt_endAt: {
-              eventTypeId: eventType.id,
-              startAt,
-              endAt,
-            },
-          },
-          create: {
-            hostId: input.hostId,
-            eventTypeId: eventType.id,
-            startAt,
-            endAt,
-            status: "AVAILABLE",
-          },
-          update: {
-            status: "AVAILABLE",
-          },
-        });
+        await upsertAvailableSlot(input.hostId, eventType.id, startAt, endAt);
       }
     }
     const futureSlots = await prisma.slot.findMany({
@@ -135,10 +122,7 @@ export async function regenerateHostSlots(input: RegenerateHostSlotsInput) {
       const key = `${eventType.id}|${slot.startAt.toISOString()}|${slot.endAt.toISOString()}`;
       if (!generatedValidSlotKeys.has(key)) {
         // this slot is no longer valid
-        await prisma.slot.update({
-          where: { id: slot.id },
-          data: { status: "BLOCKED" },
-        });
+        await blockSlot(slot.id);
       }
     }
   }

@@ -15,3 +15,13 @@ export const validate = (schema: z.ZodType) => (req : ExpressRequest,_res : Resp
     (req as any).body = result.data;
     next();
 }
+
+export const validateQuery = (schema: z.ZodType) =>
+    (req: ExpressRequest, _res: Response, next: NextFunction) => {
+        const result = schema.safeParse(req.query);
+        if (!result.success) {
+            throw badRequest("Validation failed", result.error.issues);
+        }
+        req.query = result.data as ExpressRequest["query"];
+        next();
+    };

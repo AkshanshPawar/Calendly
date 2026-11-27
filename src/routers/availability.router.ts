@@ -9,9 +9,6 @@ import { createAvailabilityExceptionSchema, createAvailabilityRuleSchema, update
 export const availabilityRouter: Router = Router();
 availabilityRouter.use(requireUserId);
 
-availabilityRouter.get("/rules",listRules);
-availabilityRouter.post("/rules",validate(createAvailabilityRuleSchema),createRule);
-availabilityRouter.patch("/rules/:id",validate(updateAvailabilityRuleSchema),updateRule);
 availabilityRouter.get("/rules", listRules);
 availabilityRouter.post("/rules", validate(createAvailabilityRuleSchema), createRule);
 availabilityRouter.patch("/rules/:id", validate(updateAvailabilityRuleSchema), updateRule);
