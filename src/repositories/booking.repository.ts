@@ -42,7 +42,9 @@ export async function findHostBookings(
     where: {
       hostId,
       ...(filters.status && { status: filters.status }),
-      ...(Object.keys(slotStartAt).length > 0 && { slot: { startAt: slotStartAt } }),
+      ...(Object.keys(slotStartAt).length > 0 && {
+        slot: { startAt: slotStartAt },
+      }),
     },
     include: {
       slot: true,
@@ -56,5 +58,18 @@ export async function findBookingById(bookingId: number) {
   return prisma.booking.findUnique({
     where: { id: bookingId },
     include: { slot: true, eventType: true, host: true },
+  });
+}
+
+export async function updateBookingCalendarDetails(
+  bookingId: number,
+  data: { meetLink: string; calendarEventId: string },
+  db?: DbClient,
+) {
+  const client = getDbClient(db);
+
+  return client.booking.update({
+    where: { id: bookingId },
+    data,
   });
 }

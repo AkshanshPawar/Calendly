@@ -6,6 +6,7 @@ import { eventTypeRouter } from "./routers/event-type.router.js";
 import { publicEventRouter } from "./routers/public-event.router.js";
 import { availabilityRouter } from "./routers/availability.router.js";
 import { bookingRouter } from "./routers/booking.router.js";
+import { googleIntegrationRouter } from "./routers/google.router.js";
 const app: Express = express();
 
 app.use(express.json());
@@ -23,6 +24,8 @@ app.use('/api/availability', availabilityRouter);
 app.use('/api/bookings', bookingRouter);
 app.use('/api/event-types', eventTypeRouter);
 app.use('/api/public', publicEventRouter);
+app.use('/api/integrations/google', googleIntegrationRouter);
+
 //error handlers
 app.use(routeNotFound);
 app.use(errorHandler);
